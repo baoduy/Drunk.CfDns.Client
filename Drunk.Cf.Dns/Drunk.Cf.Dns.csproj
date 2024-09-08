@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+
+		<PackageId>Drunk.Cf.Dns</PackageId>
+		<Title>Drunk.Cf.Dns</Title>
+		<Version>1.0.0</Version>
+		<Authors>Duy Hoang</Authors>
+		<Description>Drunk.Cf.Dns is a .NET library that provides a client for interacting with Cloudflare's DNS API. It leverages Refit to create a strongly-typed, easy-to-use HTTP client.</Description>
+		<PackageProjectUrl>https://github.com/baoduy/Drunk.CfDns.Client</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/baoduy/Drunk.CfDns.Client</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<Copyright>MIT</Copyright>
+		<PackageTags>C#;Cloudflare;DNS;DDNS;</PackageTags>
+		<PackageIcon>icon_128.png</PackageIcon>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<LangVersion>default</LangVersion>
+		<Nullable>enable</Nullable>
+		<TargetFramework>net8.0</TargetFramework>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\icon_128.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Update="README.md">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Refit" Version="7.1.2" />
+	  <PackageReference Include="Refit.HttpClientFactory" Version="7.1.2" />
+	</ItemGroup>
+
+</Project>
