@@ -1,0 +1,17 @@
+name: .NET
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  dotnet_pack_release_job:
+    uses: baoduy/ShareWorkflows/.github/workflows/dotnet-nuget-release.yml@main
+    with:
+      Project_Path: 'Drunk.Cf.Dns/Drunk.Cf.Dns.csproj'
+      Enable_Release: ${{ github.ref == 'refs/heads/main' }}
+      Enable_Nuget_Release: ${{ github.ref  == 'refs/heads/main'}}
+    secrets:
+      PACKAGE_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
+      NUGET_PACKAGE_TOKEN: ${{ secrets.NUGET_PACKAGE_TOKEN }}
