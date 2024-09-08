@@ -1,61 +1,141 @@
-# Welcome to CloudFlare.Dns
+# Drunk.Cf.Dns
 
-![CloudFlare.Dns](https://raw.githubusercontent.com/ljchuello/CloudFlare.Dns/master/icon_128.png)
+Drunk.Cf.Dns is a .NET library that provides a client for interacting with Cloudflare's DNS API. It leverages Refit to create a strongly-typed, easy-to-use HTTP client.
 
-![](https://sonarcloud.io/api/project_badges/measure?project=ljchuello_cloudflare-dns&metric=security_rating) ![](https://sonarcloud.io/api/project_badges/measure?project=ljchuello_cloudflare-dns&metric=bugs) ![](https://sonarcloud.io/api/project_badges/measure?project=ljchuello_cloudflare-dns&metric=vulnerabilities) ![](https://img.shields.io/nuget/v/CloudFlare.Dns) ![](https://img.shields.io/nuget/dt/CloudFlare.Dns) ![](https://sonarcloud.io/api/project_badges/measure?project=ljchuello_cloudflare-dns&metric=reliability_rating) ![](https://img.shields.io/github/languages/code-size/ljchuello/CloudFlare.Dns) ![](https://sonarcloud.io/api/project_badges/measure?project=ljchuello_cloudflare-dns&metric=ncloc) ![](https://img.shields.io/github/languages/top/ljchuello/CloudFlare.Dns) ![](https://sonarcloud.io/api/project_badges/measure?project=ljchuello_cloudflare-dns&metric=sqale_rating) ![](https://img.shields.io/github/contributors/ljchuello/CloudFlare.Dns) ![](https://img.shields.io/github/last-commit/ljchuello/CloudFlare.Dns)
+## Features
 
-Developed is a C#/.NET library that enables interaction with Cloudflare APIs, allowing for the management of DNS records within the Cloudflare platform. This project proves valuable for the administration of DNS records in various contexts and applications.
-
-## Compatibility
-
-This library is developed in .NET Standard 2.0 and is compatible with all .NET, .NET Core and .NET Framework implementations, it can also be used in Console projects, Web API, Class Library and even with Blazor WASM.
-
-| .NET implementation        	| Version support         	|
-|----------------------------	|-------------------------	|
-| .NET and .NET Core         	| 3.0, 3.1, 5.0, 6.0, 7.0 	|
-| .NET Framework             	| 4.6.1, 4.6.2, 4.7, 4.7.1, 4.7.2, 4.8, 4.8.1 |
+- List DNS records
+- Find DNS records by name
+- Create new DNS records
+- Update existing DNS records
+- Delete DNS records
 
 ## Installation
 
-To install you must go to Nuget package manager and search for "CloudFlare.Dns" and then install.
+You can install the package via NuGet:
 
-### [NuGet Package](https://www.nuget.org/packages/CloudFlare.Dns)
-
-    PM> Install-Package CloudFlare.Dns
+```sh
+dotnet add package Drunk.Cf.Dns
+```
 
 ## Usage
 
-```csharp
-// Variables
-string xAuthKey = "UltraPrivateSecretKeyCloudFlare"; // Global API Key
-string xAuthEmail = "lalolanda@gmail.com"; // Domain owner email in cloudflare
-string zoneIdentifier = "Domain identifier"; // Domain identifier
+### Configuration
 
-// Client
-CloudFlareDnsClient cloudFlareDnsClient = new CloudFlareDnsClient(xAuthKey, xAuthEmail, zoneIdentifier);
-
-// Create record ipv4; with proxied with cloudflare and TTL in 60 seg / 1 min
-Record record01 = await cloudFlareDnsClient.Record.Create("test-01.deployrise.com", "8.8.8.8", false, RecordType.A, 60, comment: "This commentary it's optional");
-
-// Create record cname; without proxied and ttl in 120 seg / 2 min
-Record record02 = await cloudFlareDnsClient.Record.Create("test-02.deployrise.com", "google.com", false, RecordType.CNAME, 120, comment: "This commentary it's optional");
-```
-
-When creating a subdomain, we can either write the complete address or just the subdomain. For example, we can use store.domain.com or just store. Both cases are completely valid
+First, you need to configure the Cloudflare DNS client in your `IServiceCollection`:
 
 ```csharp
-// We create a subdomain by specifying the complete address
-Record record = await cloudFlareDnsClient.Record.Create("store.deployrise.com", "8.8.8.8", false, RecordType.A, 60);
+using Microsoft.Extensions.DependencyInjection;
+using Drunk.Cf.Dns;
 
-// We create a subdomain by specifying the short address
-Record record = await cloudFlareDnsClient.Record.Create("store", "8.8.8.8", false, RecordType.A, 60);
+public class Startup
+{
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddCloudflareDnsClient(provider => ("your-email@example.com", "your-api-token"));
+    }
+}
 ```
 
-## Wiki
-If you like the project and want to understand how it works in depth, you can visit the documentation in [the wiki](https://github.com/ljchuello/CloudFlare.Dns/wiki)
+### Creating the Client
 
-## Implemented functionality
+You can create the client manually if you prefer:
 
-|  | Get All | Get One | Post | Put | Patch | Delete |
-|--|:--:|:--:|:--:|:--:|:--:|:--:|
-| DNS Records for a Zone | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+```csharp
+using Drunk.Cf.Dns;
+
+var client = CfDnsConfigs.Create("your-email@example.com", "your-api-token");
+```
+
+### Using the Client
+
+Here are some examples of how to use the client:
+
+#### List DNS Records
+
+```csharp
+var zoneId = "your-zone-id";
+var dnsRecords = await client.ListAsync(zoneId);
+
+if (dnsRecords.Success)
+{
+    foreach (var record in dnsRecords.Result)
+    {
+        Console.WriteLine($"{record.Name} - {record.Type} - {record.Content}");
+    }
+}
+```
+
+#### Find DNS Records by Name
+
+```csharp
+var zoneId = "your-zone-id";
+var name = "example.com";
+var dnsRecords = await client.FindByNameAsync(zoneId, name);
+
+if (dnsRecords.Success)
+{
+    foreach (var record in dnsRecords.Result)
+    {
+        Console.WriteLine($"{record.Name} - {record.Type} - {record.Content}");
+    }
+}
+```
+
+#### Create a DNS Record
+
+```csharp
+var zoneId = "your-zone-id";
+var newRecord = new DnsRecord
+{
+    Type = RecordType.A,
+    Name = "example.com",
+    Content = "192.0.2.1",
+    Ttl = 3600,
+    Proxied = false
+};
+
+var createResponse = await client.CreateAsync(zoneId, newRecord);
+
+if (createResponse.Success)
+{
+    Console.WriteLine($"Created record with ID: {createResponse.Result.Id}");
+}
+```
+
+#### Update a DNS Record
+
+```csharp
+var zoneId = "your-zone-id";
+var recordId = "your-record-id";
+var updatedRecord = new DnsRecord
+{
+    Type = RecordType.A,
+    Name = "example.com",
+    Content = "192.0.2.2",
+    Ttl = 3600,
+    Proxied = false
+};
+
+var updateResponse = await client.UpdateAsync(zoneId, recordId, updatedRecord);
+
+if (updateResponse.Success)
+{
+    Console.WriteLine($"Updated record with ID: {updateResponse.Result.Id}");
+}
+```
+
+#### Delete a DNS Record
+
+```csharp
+var zoneId = "your-zone-id";
+var recordId = "your-record-id";
+
+await client.DeleteAsync(zoneId, recordId);
+
+Console.WriteLine("Record deleted successfully.");
+```
+
+## License
+
+This project is licensed under the MIT License.
